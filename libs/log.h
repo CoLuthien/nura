@@ -9,11 +9,9 @@ typedef struct _logger_t
     char** buffer;
     unsigned int used;
     unsigned int length;
-    unsigned int interval;
 }logger_t;
 
-logger_t* init_logger(const char* file_name, unsigned int len,
-    unsigned int interval);
+logger_t* init_logger(const char* file_name, unsigned int len);
 void destroy_logger(logger_t* self);
 
 void push_log(logger_t* self, char* log);
