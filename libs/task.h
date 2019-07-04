@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
-#include "list.h"
-#include "debug.h"
+#include "../libs/data_struct/list.h"
+#include "../libs/comports/debug.h"
 
 #define TASK_MAGIC 0x1234
 

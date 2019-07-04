@@ -31,6 +31,7 @@ static inline void update_time(task_t* task)
     }
     task->sec = sec;
     task->msec = msec;
+    printf("%d, %d\n", task->sec, task->msec);
 }
 //find task which met the condition.
 task_t* find_task(struct list* tasks, task_t* task, task_cond_func cond)
@@ -76,7 +77,6 @@ task_t* init_task(task_func func, uint16_t _interval, uint16_t _limit,
     t->magic = TASK_MAGIC;
     t->is_skipped = false;
     t->task = func;
-    memcpy(t->task_name, task_name, 16);
 
     update_time(t);
     
@@ -88,7 +88,7 @@ void insert_task(task_t* before, task_t* task)
     ASSERT(task != NULL);
     ASSERT(NULL != before);
 
-    list_insert(before, &task->t_elem);
+    list_insert(&before->t_elem, &task->t_elem);
 }
 
 void insert_back_task(struct list* tasks, task_t* task)
@@ -121,7 +121,9 @@ task_t* fetch_task(struct list* tasks)
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     time_t sec = ts.tv_sec, msec = ts.tv_nsec / 1000000;
-    struct list_elem* last_elem = list_back(tasks);
+    struct list_elem* last_elem = list_end(tasks);
+    task_t* ret_task;
+
     for (struct list_elem* cur = list_front(tasks); 
          cur != last_elem;
          cur = list_next(cur))
@@ -129,16 +131,24 @@ task_t* fetch_task(struct list* tasks)
         task_t* fetched = list_entry(cur, task_t, t_elem);
         if(fetched->sec < sec)
         {
-            return fetched;
+            ret_task = fetched;
+            goto exist;
+            
         }
         else if(fetched->sec == sec)
         {
             if(fetched->msec <= msec)
             {
-                return fetched;
+                ret_task = fetched;
+                goto exist;
             }
         }
     }
+    return NULL;
+    
+    exist:
+        remove_task(ret_task);
+        return ret_task;
 
 }
 
