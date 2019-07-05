@@ -39,7 +39,10 @@ task_t* find_task(struct list* tasks, task_t* task, task_cond_func cond)
     struct list_elem* prev = NULL;
     task_t* suffice_task = NULL;
     struct list_elem* last_elem = list_back(tasks);
-
+    // now for O(N) search algorithm
+    /* ToDO
+        implement balanced tree algorithm
+     */
     for (struct list_elem* cur = list_front(tasks); 
          cur != last_elem;
          cur = list_next(prev))
@@ -56,7 +59,7 @@ task_t* find_task(struct list* tasks, task_t* task, task_cond_func cond)
    return suffice_task; 
 }
 
-bool is_task(task_t * task)
+inline bool is_task(task_t * task)
 {
     return task->magic == TASK_MAGIC;
 }
@@ -73,7 +76,7 @@ task_t* init_task(task_func func, uint16_t _interval, uint16_t _limit,
     }
 
     t->interval = _interval;
-    t->limit = _limit;
+    t->limit = _li mit;
     t->magic = TASK_MAGIC;
     t->is_skipped = false;
     t->task = func;
@@ -122,7 +125,7 @@ task_t* fetch_task(struct list* tasks)
     clock_gettime(CLOCK_MONOTONIC, &ts);
     time_t sec = ts.tv_sec, msec = ts.tv_nsec / 1000000;
     struct list_elem* last_elem = list_end(tasks);
-    task_t* ret_task;
+    task_t* ret_task = NULL;
 
     for (struct list_elem* cur = list_front(tasks); 
          cur != last_elem;

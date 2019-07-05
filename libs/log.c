@@ -41,6 +41,7 @@ void flush_log(logger_t* self)
     {
         return;
     }
+    ASSERT(self->used <= self->length);
     for(unsigned int i = 0; i < self->used; i++)
     {
         fprintf(self->fp, "%s\n", *(self->buffer + i));
