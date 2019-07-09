@@ -31,7 +31,6 @@ static inline void update_time(task_t* task)
     }
     task->sec = sec;
     task->msec = msec;
-    printf("%d, %d\n", task->sec, task->msec);
 }
 //find task which met the condition.
 task_t* find_task(struct list* tasks, task_t* task, task_cond_func cond)
