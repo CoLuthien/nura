@@ -30,6 +30,7 @@ serial_dev_t* init_serial(const char* serial_name, int baudrate)
 
 	super->write_byte = serial_write;
 	super->write_nbyte = serial_nwrite;
+	super->close_device = close_serial;
 
 	self->data_flush =data_flush;
 	self->baud = baudrate;
@@ -38,6 +39,8 @@ serial_dev_t* init_serial(const char* serial_name, int baudrate)
 }
 void close_serial(serial_dev_t* self)
 {
+	ASSERT(self->super.type == UART);
+
 	close(self->super.fd);
 	free(self);
 	self = NULL;
@@ -99,7 +102,7 @@ int serial_read(serial_dev_t* self)
 	int received;
 	int code = read(self->super.fd, &received, 1);
 	
-	return (code > 0) ? (uint8_t)received : -1;// consider the byte is 
+	return (code > 0) ? (uint8_t)received & 0xFF : -1;// consider the byte is 
 }
 
 int serial_nread(serial_dev_t* self, size_t len, uint8_t* buffer)
