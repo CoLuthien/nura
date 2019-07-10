@@ -5,8 +5,9 @@
 /*
     our protocol
     -------------...
-    |id|command|data|checksum|end point
-     1, 1, 1~60, 1, 1 byte
+    |start,id, command, len, data, checksum|
+    1, 1, 1, 1, len, 1 byte
+    assume len <= 255
     -------
  */
 
@@ -16,6 +17,16 @@ typedef struct _com_t
     char* outbound[64];
     unsigned int used;// length is static
 }com_t;
+
+typedef struct packet
+{
+    uint8_t start;
+    uint8_t id;
+    uint8_t command;
+    uint8_t len;
+    char* payload;
+    uint8_t checksum;
+}packet_t;
 
 bool is_full(com_t* self);
 
