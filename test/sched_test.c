@@ -1,14 +1,14 @@
-#include "libs/task.h"
-#include "libs/data_struct/list.h"
+#include "task.h"
+#include "list.h"
 #include <stdio.h>
 
 void task_func1()
 {
-	printf("func1!!");
+	printf("func1!!\n");
 }
 void task_func2()
 {
-	printf("func2!!");
+	printf("func2!!\n");
 }
 struct list tasks;
 struct list* my_list;

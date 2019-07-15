@@ -21,3 +21,8 @@ void init_main()
     // insert tasks
     //initialize devices
 }
+
+int main()
+{
+    return 0;
+}

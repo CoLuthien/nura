@@ -1,6 +1,6 @@
 #include "list.h"
-#include "../comports/debug.h"
-#include "../comports/attr.h"
+#include "debug.h"
+#include "attr.h"
 
 /* Our doubly linked lists have two header elements: the "head"
    just before the first element and the "tail" just after the

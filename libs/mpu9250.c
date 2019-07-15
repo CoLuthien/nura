@@ -1,7 +1,6 @@
 #include "mpu9250.h"
 #include "mpu9250_reg.h"
 #include "debug.h"
-#include "list.h"
 
 #include <stdio.h>
 #include <unistd.h>

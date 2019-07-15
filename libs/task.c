@@ -73,9 +73,8 @@ task_t* init_task(task_func func, uint16_t _interval, uint16_t _limit,
         free(t);
         return NULL;
     }
-
     t->interval = _interval;
-    t->limit = _li mit;
+    t->limit = _limit;
     t->magic = TASK_MAGIC;
     t->is_skipped = false;
     t->task = func;
