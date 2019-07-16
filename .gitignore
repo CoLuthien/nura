@@ -7,3 +7,5 @@ cmake_install.cmake
 cmake-build-*/
 *.o 
 *.mk
+*.out
+main
