@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "debug.h"
 typedef struct _logger_t
 {
     FILE* fp;

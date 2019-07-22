@@ -192,8 +192,39 @@ mpu9250_t* init_mpu9250(i2c_dev_t* i2c, int sample_rate, uint8_t accel_scale, ui
     super->rate = sample_rate;//Hz 
     super->device_addr = MPU9250_ADDR;
 
-    self->accel_res = 8.0f / 32768.0f;
-    self->gyro_res = 250.0f / 32768.0f;
+    switch (accel_scale)
+    {
+    case 2:
+        self->accel_res = 2.0f / 32768.0f;
+        break;
+    case 4:
+        self->accel_res = 4.0f / 32768.0f;
+        break;
+    case 8:
+        self->accel_res = 8.0f/ 32768.0f;
+        break;
+    case 16:
+        self->accel_res = 16.0f / 32768.0f;
+        break;    
+    default:
+        self->accel_res = 8.0f / 32768.0f;
+        printf("accel scale you want does not exist!! setup to 8g defaults\n");// todo: change log system
+        break;
+    }
+
+    switch (gyro_scale)
+    {
+    case 250:
+    case 500:
+    case 1000:
+    case 2000:
+        self->gyro_res = (float)gyro_scale / 32768.0f;
+        break;
+    default:
+        self->gyro_res = (float)500.0 / 32768.0f;
+        printf("gyro scale you wand does not exist!! setup to default value 500deg/s\n");
+        break;
+    }
     
     _init_mpu9250(self);
 
@@ -205,4 +236,30 @@ static inline void check_conn(mpu9250_t* self)
     i2c_dev_t* i2c = self->super.comm;
     ASSERT(i2c->set_addr(i2c, self->super.device_addr) > -1);
     ASSERT(i2c->read_byte_reg(i2c, WHO_AM_I) == 0x71);
+}
+
+void update_data(mpu9250_t* self)
+{
+    i2c_dev_t* i2c = self->super.comm;
+    ASSERT(i2c->super.type == I2C);
+    check_conn(self);
+
+    int16_t ax, ay, az;
+    int16_t gx, gy, gz;
+
+    i2c->read_nbyte_reg(i2c, ACCEL_YOUT_H, 2, &ay);
+    i2c->read_nbyte_reg(i2c, ACCEL_XOUT_H, 2, &ax);
+    i2c->read_nbyte_reg(i2c, ACCEL_ZOUT_H, 2, &az);
+
+    i2c->read_nbyte_reg(i2c, GYRO_XOUT_H, 2, &gx);
+    i2c->read_nbyte_reg(i2c, GYRO_YOUT_H, 2, &gy);
+    i2c->read_nbyte_reg(i2c, GYRO_ZOUT_H, 2, &gz);
+
+    self->accel[0] = (float)ax * self->accel_res;
+    self->accel[1] = (float)ay * self->accel_res;
+    self->accel[2] = (float)az * self->accel_res;
+
+    self->gyro[0] = (float)gx * self->gyro_res;
+    self->gyro[1] = (float)gy * self->gyro_res;
+    self->gyro[2] = (float)gz * self->gyro_res;
 }

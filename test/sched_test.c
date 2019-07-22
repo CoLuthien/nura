@@ -1,5 +1,5 @@
-#include "task.h"
-#include "list.h"
+#include "../libs/task.h"
+#include "../libs/list.h"
 #include <stdio.h>
 
 void task_func1()
