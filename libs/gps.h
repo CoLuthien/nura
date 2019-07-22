@@ -1,5 +1,5 @@
 #include "serial.h"
-#include "nmea.h"
+#include "./nmea/include/nmea.h"
 #include <stdbool.h>
 
 

@@ -1,6 +1,6 @@
 CC = gcc 
  
-BIN = libnmea.a 
+BIN = build/libnmea.a 
 MODULES = generate generator parse parser tok context nmeatime info gmath sentence  
  
 OBJ = $(MODULES:%=build/%.o) 
@@ -28,7 +28,6 @@ remake: clean all
 $(BIN): $(LINKOBJ)
 	ar rsc $@ $^
 	ranlib $@
-	echo "hi"
 
 build/%.o: src/%.c 
 	$(CC) $(INCS) -c $< -o $@
