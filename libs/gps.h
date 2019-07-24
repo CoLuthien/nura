@@ -1,22 +1,26 @@
+#pragma once
 #include "serial.h"
-#include "./nmea/include/nmea.h"
-#include <stdbool.h>
+#include "sensor.h"
+#include <stdint.h>
+#include "nmea/include/nmea.h"
+#include <sys/types.h>
+#include <time.h>
+#include <fcntl.h>
+#include <stdio.h>
 
 
 
-typedef struct _gps_t
-{
-    serial_dev_t* port;
-    char* buffer;
-    unsigned int position;
+typedef struct _gps_t{
+    sensor_t super;
+    FILE* raw_gps_data;
     nmeaINFO cur_info;
     nmeaPARSER parser;
+
 }gps_t;
 
-gps_t* init_gps(serial_dev_t* port, unsigned int len);
-void destroy_gps(gps_t* gps);
+gps_t* init_gps(serial_dev_t* uart);
 
-bool gps_try_receive(gps_t* gps);
+void gps_store(gps_t* self);
 
 
 

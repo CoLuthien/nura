@@ -12,7 +12,7 @@ LIBS = -lm -Llib -lnmea
  
 .PHONY: all all-before all-after clean clean-custom doc
  
-all: all-before $(BIN) samples all-after 
+all: all-before $(BIN) all-after 
 
 all-before:
 	mkdir -p build

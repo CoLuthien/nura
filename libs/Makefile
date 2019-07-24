@@ -7,13 +7,13 @@ SRCS = $(OBJS:%.o=%.c)
 OBJDIR = build/
 
 
-LIBS= -lm -llibnmea
+LIBS= -lm -llibnmea 
 
 
 all: depend $(OBJDIR) move nmealib
 
 $(OBJDIR): $(OBJS)
-	$(CC) $(CFLAGS) $(LIBS) -o  $(OBJS)
+	$(CC) $(CFLAGS) $(LIBS) -o  $(OBJS) ./nmea/libnmea.a
 
 move: 
 	mv *.o ../build/

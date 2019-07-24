@@ -102,7 +102,7 @@ int serial_read(serial_dev_t* self)
 	int received;
 	int code = read(self->super.fd, &received, 1);
 	
-	return (code > 0) ? (uint8_t)received & 0xFF : -1;// consider the byte is 
+	return (code > 0) ? (uint8_t)received: -1;// consider the byte is 
 }
 
 int serial_nread(serial_dev_t* self, size_t len, uint8_t* buffer)
