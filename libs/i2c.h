@@ -15,8 +15,9 @@ typedef struct _i2c_device_t
     
     int (*read_byte_reg)(struct _i2c_device_t* self, uint8_t reg);
     int (*read_nbyte_reg)(struct _i2c_device_t* self, uint8_t reg, size_t len, uint8_t* buffer);
-
-    int (*write_bit_reg)(struct _i2c_device_t*, uint8_t reg, uint8_t position, uint8_t len, uint8_t data, bool mode); // true : maintain value, false: erase value
+ // true : maintain value, false: erase value
+    int (*write_bit_reg)(struct _i2c_device_t*, uint8_t reg, uint8_t position, uint8_t len, uint8_t data, bool mode); 
+   
     int (*write_byte_reg)(struct _i2c_device_t* self, uint8_t reg, uint8_t data);
     int (*write_nbyte_reg)(struct _i2c_device_t* self, uint8_t reg, size_t len, uint8_t* buffer);
 }i2c_dev_t;
