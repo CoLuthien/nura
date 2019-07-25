@@ -6,6 +6,7 @@
 #include "gpio.h"
 #include "serial.h"
 #include "log.h"
+#include "lps25.h"
 
 extern bool interrupt = false;
 static struct list main_task;
@@ -16,6 +17,7 @@ static gps_t* gps = NULL;
 static logger_t* log = NULL;
 static logger_t* debug = NULL;
 static mpu9250_t* imu = NULL;
+static lps25_t* baro = NULL;
 
 void update_imu()
 {
@@ -51,12 +53,13 @@ void write_data_log()
     push_log(log, imu_log);
 
 }
-void update_gps()
+void update_gps_baro()
 {
-    if(gps_try_receive(gps))
+    if(gps_receive(gps))
     {
       // show the infos
     }
+    update_baro(baro);
 }
 
 void run_task()
@@ -78,13 +81,14 @@ void init_main()
     printf("hi!!\n");
     list_init(&main_task);
     i2c = init_i2c("/dev/i2c-1");
-    port1 = init_serial("/dev/..", 115200);
-    port2 = init_serial("/dev/,,,", 115200);
-    gps = init_gps(port1, 256);
+    port1 = init_serial("/dev/ttyAMA0", 9600);
+    port2 = init_serial("/dev/,", 115200);
+    gps = init_gps(port1);
     log = init_logger("name..", 64);
     imu = init_mpu9250(i2c, 50, 16, 500);
+    baro = init_baro(i2c);
 
-    init_task(update_gps, 100, 150, "gps_update");
+    init_task(update_gps_baro, 100, 150, "gps_update");
     init_task(update_imu, 20, 20, "imu_update");
     init_task(write_data_log, 100, 100, "data_log");
     
@@ -92,7 +96,6 @@ void init_main()
 
 int main()
 {
-    printf("!!");
     init_main();
     run_task();
     return 0;

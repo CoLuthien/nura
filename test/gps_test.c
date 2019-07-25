@@ -11,7 +11,7 @@ int main()
 
     while(1)
     {
-	gps_store(gps);
-	usleep(1000*1000);
+	    gps_store(gps);
+    	usleep(1000*1000);
     }
 }
