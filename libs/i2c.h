@@ -17,7 +17,8 @@ typedef struct _i2c_device_t
     int (*read_nbyte_reg)(struct _i2c_device_t* self, uint8_t reg, size_t len, uint8_t* buffer);
  // true : maintain value, false: erase value
     int (*write_bit_reg)(struct _i2c_device_t*, uint8_t reg, uint8_t position, uint8_t len, uint8_t data, bool mode); 
-   
+    int (*read_bit_reg)(struct _i2c_device_t*, uint8_t reg, uint8_t position, uint8_t len); 
+
     int (*write_byte_reg)(struct _i2c_device_t* self, uint8_t reg, uint8_t data);
     int (*write_nbyte_reg)(struct _i2c_device_t* self, uint8_t reg, size_t len, uint8_t* buffer);
 }i2c_dev_t;
@@ -32,6 +33,8 @@ uint8_t get_address(i2c_dev_t* self);
 static inline int i2c_access(int fd, char rw, uint8_t command, int size, union i2c_smbus_data* data);
 
 int i2c_write_bit_reg(i2c_dev_t* self, uint8_t reg, uint8_t pos, uint8_t len, uint8_t data, bool mode);
+int i2c_read_bit_reg(struct _i2c_device_t*, uint8_t reg, uint8_t position, uint8_t len); 
+
 
 int i2c_read_byte(i2c_dev_t* self);
 int i2c_write_byte(i2c_dev_t* self, uint8_t data);

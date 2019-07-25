@@ -208,5 +208,39 @@ int i2c_write_bit_reg(i2c_dev_t* self, uint8_t reg, uint8_t pos, uint8_t len, ui
 	
 	return self->write_byte_reg(self, reg, packet);
 }
+int i2c_read_bit_reg(i2c_dev_t* self, uint8_t reg, uint8_t pos, uint8_t len)
+{
+	ASSERT(len <= 8);
+	ASSERT(pos < 8);
+	uint8_t packet = self->read_byte_reg(self, reg);
+	uint8_t mask = ((1 << len) -1) << (pos - len + 1); 
+	/* 2**n - 1
+	 =
+	 ....0 1 	1 	1 	1 ...
+	     n n-1	n-2 n-3   ...
+
+	ex 
+		1111 1011 = original data 
+		0000 0111 = mask
+		3 = position 
+		3 = len 
+		we need to move 3rd bit just 1 time to left 		
+	*/
+
+	packet &= (mask);
+	/*
+		ex 
+		1111 1011 = original
+		~(0000 1110) = mask 
+		1111 0001 = ~mask
+
+		orignal & ~mask =
+		1111 0001 => erase 3bit !
+	*/
+
+	
+	return packet >> pos - len;
+}
+
 
 
