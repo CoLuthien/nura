@@ -143,26 +143,29 @@ static void _init_mpu9250(mpu9250_t* self)
         printf("failed to set address to %p", self->super.device_addr);
         return;
     }
+    if(self->super.rate != 0)
+    {
+        printf("sorry rate is not implemented. set to 50hz\n");
+        self->super.rate = 50;
+    }
     
-    i2c->write_bit_reg(i2c, PWR_MGMT_1, 7, 1, 1, false); //reset device
-    usleep(100*1000);
 
     i2c->write_bit_reg(i2c, PWR_MGMT_1, 6, 1, 0b0, true);// turn off sleep mode 
     i2c->write_bit_reg(i2c, PWR_MGMT_1, 2, 3, 0b001, true);// select automatic clock source
-
     i2c->write_bit_reg(i2c, PWR_MGMT_2, 5, 6, 0b000000, true);// turn on gyro and accel
 
-    i2c->write_bit_reg(i2c, CONFIG, 2, 3, 0b010, true); //select gyro low pass filter range
+
     i2c->write_byte_reg(i2c, SMPLRT_DIV, 0x00); // data output rate / 1 + samplerate 
 
     i2c->write_bit_reg(i2c, GYRO_CONFIG, 7, 3, 0b000, true);// disable self test mode
-    i2c->write_bit_reg(i2c, GYRO_CONFIG, 4, 2, 0b00, true);// select gyro scale 250dps(degree per second)
+
     i2c->write_bit_reg(i2c, GYRO_CONFIG, 1, 2, 0b00, true);// select fchoice_b, in this case we will use lpf
+    i2c->write_bit_reg(i2c, CONFIG, 2, 3, 0b101, true); //select gyro low pass filter range 20ms term
 
     i2c->write_bit_reg(i2c, ACCEL_CONFIG_1, 7, 3, 0b000, true);//disable  self test mode
-    i2c->write_bit_reg(i2c, ACCEL_CONFIG_1, 4, 2, 0b01, true);// select accel scale, +-4g
-
-    i2c->write_bit_reg(i2c, ACCEL_CONFIG_2, 3, 4, 0b0010, true);// select fchoice_b and accel lpf range
+   
+    i2c->write_bit_reg(i2c, ACCEL_CONFIG_2, 3, 1, 0b0, true);
+    i2c->write_bit_reg(i2c, ACCEL_CONFIG_2, 2, 3, 0b100, true);// select fchoice_b and accel lpf range
 
     i2c->write_bit_reg(i2c, USER_CTRL, 6, 1, 0, true);//disable fifo
     i2c->write_bit_reg(i2c, USER_CTRL, 5, 1, 0, true);//disable i2c_mst function 
@@ -192,38 +195,56 @@ mpu9250_t* init_mpu9250(i2c_dev_t* i2c, int sample_rate, uint8_t accel_scale, ui
     super->rate = sample_rate;//Hz 
     super->device_addr = MPU9250_ADDR;
 
+    i2c->write_bit_reg(i2c, PWR_MGMT_1, 7, 1, 1, false); //reset device
+    usleep(100*1000);
+
     switch (accel_scale)
     {
-    case 2:
-        self->accel_res = 2.0f / 32768.0f;
-        break;
-    case 4:
-        self->accel_res = 4.0f / 32768.0f;
-        break;
-    case 8:
-        self->accel_res = 8.0f/ 32768.0f;
-        break;
-    case 16:
-        self->accel_res = 16.0f / 32768.0f;
-        break;    
-    default:
-        self->accel_res = 8.0f / 32768.0f;
-        printf("accel scale you want does not exist!! setup to 8g defaults\n");// todo: change log system
-        break;
+        case 2:
+            self->accel_res = (float)accel_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, ACCEL_CONFIG_1, 4, 2, 0b00, true);// select accel scale, +-4g
+            break;    
+        case 4:
+            self->accel_res = (float)accel_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, ACCEL_CONFIG_1, 4, 2, 0b01, true);// select accel scale, +-4g
+            break;    
+        case 8:
+            self->accel_res = (float)accel_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, ACCEL_CONFIG_1, 4, 2, 0b10, true);// select accel scale, +-4g
+            break;    
+        case 16:
+            self->accel_res = (float)accel_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, ACCEL_CONFIG_1, 4, 2, 0b11, true);// select accel scale, +-4g
+            break;    
+        default:
+            self->accel_res = 8.0f / 32768.0f;
+            i2c->write_bit_reg(i2c, ACCEL_CONFIG_1, 4, 2, 0b10, true);// select accel scale, +-4g
+            printf("accel scale you want does not exist!! setup to 8g defaults\n");// todo: change log system
+            break;
     }
 
     switch (gyro_scale)
     {
-    case 250:
-    case 500:
-    case 1000:
-    case 2000:
-        self->gyro_res = (float)gyro_scale / 32768.0f;
-        break;
-    default:
-        self->gyro_res = (float)500.0 / 32768.0f;
-        printf("gyro scale you wand does not exist!! setup to default value 500deg/s\n");
-        break;
+        case 250:
+            self->gyro_res = (float)gyro_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, GYRO_CONFIG, 4, 2, 0b00, true);// select gyro scale 250dps(degree per second)
+            break;
+        case 500:
+            self->gyro_res = (float)gyro_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, GYRO_CONFIG, 4, 2, 0b01, true);// select gyro scale 250dps(degree per second)
+            break;
+        case 1000:
+            self->gyro_res = (float)gyro_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, GYRO_CONFIG, 4, 2, 0b10, true);// select gyro scale 250dps(degree per second)
+            break;   
+        case 2000:
+            self->gyro_res = (float)gyro_scale / 32768.0f;
+            i2c->write_bit_reg(i2c, GYRO_CONFIG, 4, 2, 0b11, true);// select gyro scale 250dps(degree per second)
+            break;
+        default:
+            self->gyro_res = (float)500.0 / 32768.0f;
+            printf("gyro scale you want does not exist!! setup to default value 500deg/s\n");
+            break;
     }
     
     _init_mpu9250(self);
