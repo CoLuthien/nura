@@ -1,10 +1,16 @@
 #ifndef __LPS25_REG_H
 #define __LPS25_REG_H
 
+#define LPS25_ADDR1 0b1011100
+#define LPS25_ADDR2 0b1011101
+
 #define REF_P_XL 0x08
 #define REF_P_L 0x09
 #define REF_P_H 0x0a
+
 #define BARO_WHO_AM_I 0x0f
+#define BARO_WAI_VAL 0xbd
+
 #define RES_CONF 0x10
 #define CTRL_REG1 0x20
 #define CTRL_REG2 0x21
