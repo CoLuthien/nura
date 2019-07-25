@@ -10,12 +10,14 @@ typedef struct serial_dev_t
     speed_t baud;
 
     void (*data_flush)(struct serial_dev_t* self);
+    void (*update_baud)(struct serial_dev_t* self, int baud);
 }serial_dev_t;
 
 serial_dev_t* init_serial(const char* serial_name, int baudrate);
 int serial_open(const char*, int);
 void close_serial(serial_dev_t* self);
 void data_flush(serial_dev_t* self);
+void update_baud(serial_dev_t* self, int baud);
 
 int serial_read(serial_dev_t* self);
 int serial_nread(serial_dev_t* self, size_t len, uint8_t* buffer);

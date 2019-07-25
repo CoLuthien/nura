@@ -32,7 +32,8 @@ serial_dev_t* init_serial(const char* serial_name, int baudrate)
 	super->write_nbyte = serial_nwrite;
 	super->close_device = close_serial;
 
-	self->data_flush =data_flush;
+	self->data_flush = data_flush;
+	self->update_baud = update_baud;
 	self->baud = baudrate;
 
 	return self;
@@ -44,6 +45,20 @@ void close_serial(serial_dev_t* self)
 	close(self->super.fd);
 	free(self);
 	self = NULL;
+}
+
+void update_baud(serial_dev_t* self, int baud)
+{
+	struct termios options;
+	tcgetattr(self->super.fd, &options);
+
+	cfsetispeed(&options, baud);
+	cfsetospeed(&options, baud);
+
+	tcsetattr(self->super.fd, TCSANOW, &options);
+	self->baud = baud;
+
+	return;
 }
 
 int serial_open(const char* name, int baudrate)
