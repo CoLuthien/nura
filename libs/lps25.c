@@ -21,6 +21,7 @@ lps25_t* init_baro(i2c_dev_t* i2c)
     lps25_t* self = malloc(sizeof(lps25_t));
     self->super.comm = i2c;
 
+
     if(!check_conn(self, LPS25_ADDR1) && !check_conn(self, LPS25_ADDR2))
     {
         printf("barometer does not response!!\n");
@@ -30,10 +31,11 @@ lps25_t* init_baro(i2c_dev_t* i2c)
     i2c->write_bit_reg(i2c,CTRL_REG1, 7, 1, 1, true);// set power on
     i2c->write_bit_reg(i2c, CTRL_REG2, 7, 1, 0, true); // set boot time reset
 
-    usleep(40* 1000);// wait 40ms 
+    usleep(40* 1000);// wait 40ms vim
 
     i2c->write_bit_reg(i2c, CTRL_REG2, 3, 1, 0, true); // enable i2c
     i2c->write_bit_reg(i2c, CTRL_REG2, 1, 1, 1, true);// set auto zero value
+    return self;
 }
 
 void destroy_baro(lps25_t* self)
@@ -46,7 +48,7 @@ void update_baro(lps25_t* self)
     i2c_dev_t* i2c = self->super.comm;
     uint8_t prs[3];
 
-    i2c->read_nbyte_reg(i2c, PRESS_OUT_XL, 3, prs);
+    i2c->read_nbyte_reg(i2c, PRESS_OUT_XL, 2, prs);
 
     unsigned int p = prs[2] << 16 | prs[1] << 8 | prs[0];
     self->pressure = (float)(p / 4096);
