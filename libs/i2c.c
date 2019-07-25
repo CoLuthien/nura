@@ -136,8 +136,10 @@ int i2c_read_byte_reg(i2c_dev_t* self, uint8_t reg)
 {
 	union i2c_smbus_data data;
 	if(i2c_access(self->super.fd, I2C_SMBUS_READ, reg, I2C_SMBUS_BYTE_DATA, &data))
+	{
 		return -1;
-	return data.byte & 0xFF; // why do we have to do this?
+	}
+	return data.byte; // why do we have to do this?
 }
 
 // read 2 byte from register, len must 2

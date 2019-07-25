@@ -20,6 +20,7 @@ lps25_t* init_baro(i2c_dev_t* i2c)
 {
     lps25_t* self = malloc(sizeof(lps25_t));
     self->super.comm = i2c;
+    printf("initializing barometer!!\n");
 
     if(!check_conn(self, LPS25_ADDR1) && !check_conn(self, LPS25_ADDR2))
     {
@@ -27,13 +28,25 @@ lps25_t* init_baro(i2c_dev_t* i2c)
         return NULL;
     }
 
-    i2c->write_bit_reg(i2c,CTRL_REG1, 7, 1, 1, true);// set power on
-    i2c->write_bit_reg(i2c, CTRL_REG2, 7, 1, 0, true); // set boot time reset
+    i2c->write_bit_reg(i2c, CTRL_REG2, 7, 1, 1, true); // set boot time reset
+    i2c->write_bit_reg(i2c, CTRL_REG2, 2, 1, 1, true);
+    usleep(400*1000);
 
-    usleep(40* 1000);// wait 40ms 
+    i2c->write_bit_reg(i2c,CTRL_REG1, 7, 1, 1, true);// set power on
+    i2c->write_bit_reg(i2c, CTRL_REG1, 1, 1, 0, true);// noreset autozero
+
+    i2c->write_bit_reg(i2c, CTRL_REG1, 6, 3, 0b001, true); // set update_rate
+    i2c->write_bit_reg(i2c, CTRL_REG1, 2, 1, 1, true);//set block data update
+
+    i2c->write_bit_reg(i2c, RES_CONF, 1, 2, 0b10, true);
+
+    usleep(200* 1000);// wait 200ms 
 
     i2c->write_bit_reg(i2c, CTRL_REG2, 3, 1, 0, true); // enable i2c
     i2c->write_bit_reg(i2c, CTRL_REG2, 1, 1, 1, true);// set auto zero value
+    
+    i2c->write_bit_reg(i2c, CTRL_REG2, 6, 3, 0, true);
+    return self;
 }
 
 void destroy_baro(lps25_t* self)
@@ -46,13 +59,30 @@ void update_baro(lps25_t* self)
     i2c_dev_t* i2c = self->super.comm;
     uint8_t prs[3];
 
-    i2c->read_nbyte_reg(i2c, PRESS_OUT_XL, 3, prs);
+    prs[0] = i2c->read_byte_reg(i2c, PRESS_OUT_XL);
+    prs[1] = i2c->read_byte_reg(i2c, PRESS_OUT_L);
+    prs[2] = i2c->read_byte_reg(i2c, PRESS_OUT_H);
 
-    unsigned int p = prs[2] << 16 | prs[1] << 8 | prs[0];
-    self->pressure = (float)(p / 4096);
+    uint32_t ref_p = (uint32_t)(
+		    	i2c->read_byte_reg(i2c, REF_P_H)<< 16 |
+			i2c->read_byte_reg(i2c, REF_P_L)<< 8 |
+			i2c->read_byte_reg(i2c, REF_P_XL));
 
-    i2c->read_nbyte_reg(i2c, TEMP_OUT_L, 2, prs);
-    unsigned int t = prs[1] << 8 | prs[0];    
+    int32_t p = (int32_t)(
+		    i2c->read_byte_reg(i2c, PRESS_OUT_H) << 24  |
+	       	    i2c->read_byte_reg(i2c, PRESS_OUT_L) << 16 |
+		    i2c->read_byte_reg(i2c, PRESS_OUT_XL) << 8
+		    );
+    p = p >> 8;
+	printf("%x\n", p);
+
+
+    self->pressure = (float)((float)p / 4096.0f);
+
+    uint16_t t = (uint16_t)(
+		    i2c->read_byte_reg(i2c,TEMP_OUT_H) << 8|
+		    i2c->read_byte_reg(i2c, TEMP_OUT_L) );
+
     self->temp = (float)(t / 480) + 42.5f;
 }
 
