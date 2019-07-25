@@ -16,12 +16,13 @@ bool check_conn(lps25_t* self, uint8_t addr)
 }
 
 
-lps25_t* init_baro(i2c_dev_t* i2c)
+lps25_t* init_baro(i2c_dev_t* i2c, int update_rate)
 {
     lps25_t* self = malloc(sizeof(lps25_t));
     self->super.comm = i2c;
     printf("initializing barometer!!\n");
-
+    self->super.rate = update_rate;
+    self->super.device_addr = LPS25_ADDR1; // WE ONLY USE 1 BAROMETER
 
     if(!check_conn(self, LPS25_ADDR1) && !check_conn(self, LPS25_ADDR2))
     {
@@ -35,8 +36,28 @@ lps25_t* init_baro(i2c_dev_t* i2c)
 
     i2c->write_bit_reg(i2c,CTRL_REG1, 7, 1, 1, true);// set power on
     i2c->write_bit_reg(i2c, CTRL_REG1, 1, 1, 0, true);// noreset autozero
+    
 
-    i2c->write_bit_reg(i2c, CTRL_REG1, 6, 3, 0b001, true); // set update_rate
+    switch (update_rate)
+    {
+        case 1:
+            i2c->write_bit_reg(i2c, CTRL_REG1, 6, 3, 0b001, true); // set update_rate
+            break;
+        case 7:
+            i2c->write_bit_reg(i2c, CTRL_REG1, 6, 3, 0b010, true); // set update_rate
+            break;
+        case 13:
+            i2c->write_bit_reg(i2c, CTRL_REG1, 6, 3, 0b011, true); // set update_rate
+            break;
+        case 25:
+            i2c->write_bit_reg(i2c, CTRL_REG1, 6, 3, 0b100, true); // set update_rate
+            break;
+        default:
+            i2c->write_bit_reg(i2c, CTRL_REG1, 6, 3, 0b001, true);
+            break;
+    }
+
+   
     i2c->write_bit_reg(i2c, CTRL_REG1, 2, 1, 1, true);//set block data update
 
     //set average resolution
