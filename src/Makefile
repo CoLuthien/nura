@@ -6,10 +6,13 @@ SRCS = main.c
 OBJS = $(SRCS:%.c = %.o)
 INCS = -I ../libs -I ../libs/nmea
 
-all: depend
+all: depend move
 	$(CC) $(CFLAGS) $(INCS) $(OBJS)
 
 depend: 
 	$(CC) -MM $(INCS) $(SRCS) > depend_file.mk
+
+move:
+	mv *.o ../build/
 
 -include depend_file.mk
