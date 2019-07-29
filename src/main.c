@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <signal.h>
 #include "task.h"
 #include "mpu9250.h"
 #include "gps.h"
@@ -23,6 +24,11 @@ static lps25_t* baro = NULL;
 void update_imu()
 {
     update_data(imu);
+}
+void sig_handle(int signum)
+{
+    fclose(log->fp);
+    exit(0);
 }
 
 void write_data_log()
@@ -73,16 +79,16 @@ void run_task()
         task_t* cur = fetch_task(&main_task);
         if(cur == NULL)
         {
+            struct list_elem* cur = list_pop_front(&main_task);
+            list_push_back(&main_task, cur);//To Do: change schedule algorithm
             continue;// you can do what ever you want. but you have to come back until the dead line
         }
         cur->task();
         schedule(&main_task, cur);
     }
 }
-
 void init_main()
 {
-    printf("hi!!\n");
     list_init(&main_task);
     i2c = init_i2c("/dev/i2c-1");
     port1 = init_serial("/dev/ttyAMA0", 9600);

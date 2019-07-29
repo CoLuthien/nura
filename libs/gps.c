@@ -24,6 +24,7 @@ gps_t* init_gps(serial_dev_t* port)
     port->super.write_nbyte(port, strlen(baud_rate), baud_rate);
 
     port->update_baud(port, 115200);
+    printf("gps port baudrate: %d\n", port->baud);
 
     return self;
 }
@@ -41,22 +42,16 @@ void gps_receive(gps_t* self)
     //TO DO: this method can discard the packet need another method
     while((ch = uart->super.read_byte(uart)) != 0x0a && idx < 256)
     {
-		if(ch != -1)
+		if(ch != 0)
 		{
 				arr[idx] = ch;
 				idx += 1;
 		}
-        if(idx > 255)
+        if(idx > 255 || ch == 0)
         {
             break;
         }
         
     }
-	int len = nmea_parse(&self->parser, (const char*)arr, idx, &self->cur_info);	
-	if(idx != 0)
-	{
-		printf("%f %f\n", self->cur_info.lat, self->cur_info.lon);
-		printf("%s\n", arr);
-	}
-
+	int len = nmea_parse(&self->parser, (const char*)arr, strlen(arr), &self->cur_info);	
 }

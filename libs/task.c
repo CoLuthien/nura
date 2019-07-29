@@ -78,6 +78,7 @@ task_t* init_task(task_func func, uint16_t _interval, uint16_t _limit,
     t->magic = TASK_MAGIC;
     t->is_skipped = false;
     t->task = func;
+    memcpy(t->task_name, task_name, 16);
 
     update_time(t);
     

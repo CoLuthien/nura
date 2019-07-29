@@ -128,7 +128,7 @@ bool self_test(mpu9250_t* self)
 
 
 
-static void _init_mpu9250(mpu9250_t* self)
+static bool _init_mpu9250(mpu9250_t* self)
 {
     comm_device_t* com = self->super.comm;
     uint8_t packet = 0x00;
@@ -141,7 +141,7 @@ static void _init_mpu9250(mpu9250_t* self)
     if (i2c->set_addr(i2c, self->super.device_addr) != 0)
     {
         printf("failed to set address to %p", self->super.device_addr);
-        return;
+        return false;
     }
     if(self->super.rate != 0)
     {
@@ -174,17 +174,19 @@ static void _init_mpu9250(mpu9250_t* self)
 
     usleep(40 * 1000); 
     //check we are really commnuicate with mpu9250
-    if (i2c->read_byte_reg(i2c, WHO_AM_I) != 0x71)
+    if (i2c->read_byte_reg(i2c, WHO_AM_I) != MPU9250_ID)
     {
         printf("device not respond!!\n");
         return;
     }
-
+    printf("imu self test start!\n");
     if(!self_test(self))
     {
-        printf("self test failed!\n");
+        printf("self test failed with above result!\n");
+        return false;
     }
-    return;
+    printf("imu self test success with above result\n");
+    return true;
 }
 
 mpu9250_t* init_mpu9250(i2c_dev_t* i2c, int sample_rate, uint8_t accel_scale, uint16_t gyro_scale)
@@ -247,9 +249,17 @@ mpu9250_t* init_mpu9250(i2c_dev_t* i2c, int sample_rate, uint8_t accel_scale, ui
             break;
     }
     
-    _init_mpu9250(self);
+    if(_init_mpu9250(self))
+    {
+        return self;
+    }
+    else
+    {
+        printf("imu initialization failed!\n");
+        free(self);
+        return NULL;
+    }
 
-    return self;
 }
 
 static inline void check_conn(mpu9250_t* self)
