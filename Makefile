@@ -8,17 +8,16 @@ CFLAGS = -Wall
 
 #$? <- 현재의 목표 파일(Target)보다 더 최근에 갱신된 파일이름
 
-OBJS = main.o gpio.o gps.o i2c.o list.o log.o lps25.o mpu9250.o serial.o task.o libnmea.a
-
-BUILD_DIR = build/
+OBJS = main.o gpio.o gps.o i2c.o list.o log.o lps25.o mpu9250.o serial.o task.o
+BUILD_DIR = build
 
 TARGET_OBJS = $(OBJS:%.o=$(BUILD_DIR)/%.o)
 
 INCS = -I ../libs -I ../libs/nmea
-LIBS = -lm 
+LIBS = -lm  
 
 all: libs logic
-	$(CC) $(CFLAGS) -o main.out $(INCS) $(TARGET_OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o main.out $(INCS) $(TARGET_OBJS) $(BUILD_DIR)/libnmea.a $(LIBS)
 
 
 libs: 

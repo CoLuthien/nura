@@ -2,8 +2,8 @@
 #include "sensor.h"
 #include "i2c.h"
 #include <stdbool.h>
-
 #define MPU9250_ADDR 0x68
+#define MPU9250_ID 0x73
 
 typedef struct mpu9250
 {/*singleton object!*/

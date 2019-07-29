@@ -15,6 +15,7 @@ static serial_dev_t* port1 = NULL;
 static serial_dev_t* port2 = NULL;
 static gps_t* gps = NULL;
 static logger_t* log = NULL;
+static logger_t* imu_log = NULL;
 static logger_t* debug = NULL;
 static mpu9250_t* imu = NULL;
 static lps25_t* baro = NULL;
@@ -53,12 +54,15 @@ void write_data_log()
     push_log(log, imu_log);
 
 }
-void update_gps_baro()
+void update_gps()
 {
     if(gps_receive(gps))
     {
       // show the infos
     }
+}
+void update_pressure()
+{
     update_baro(baro);
 }
 
@@ -86,15 +90,15 @@ void init_main()
     gps = init_gps(port1);
     log = init_logger("name..", 64);
     imu = init_mpu9250(i2c, 50, 16, 500);
-    baro = init_baro(i2c);
+    baro = init_baro(i2c, 25);
 
-    init_task(update_gps_baro, 100, 150, "gps_update");
-    init_task(update_imu, 20, 20, "imu_update");
-    init_task(write_data_log, 100, 100, "data_log");
-    
+    insert_back_task(&main_task, init_task(update_gps, 100, 150, "gps_update"));
+    insert_back_task(&main_task,init_task(update_imu, 1000 / imu->super.rate, 20, "imu_update"));
+    insert_back_task(&main_task,init_task(update_pressure, 1000 / baro->super.rate, 100, "barometer"));
+    insert_back_task(&main_task,init_task(write_data_log, 100, 100, "data_log"));
 }
 
-int main()
+int main(int argc, char* argv)
 {
     init_main();
     run_task();

@@ -10,16 +10,13 @@ OBJDIR = build/
 LIBS= -lm -llibnmea 
 
 
-all: depend $(OBJDIR) move nmealib
+all: depend $(OBJDIR) nmealib move 
 
 $(OBJDIR): $(OBJS)
 	$(CC) $(CFLAGS) $(LIBS) -o  $(OBJS) ./nmea/libnmea.a
 
 move: 
 	mv *.o ../build/
-
-nmealib: 
-	cd nmea && $(MAKE)
 
 
 .PHONY: clean

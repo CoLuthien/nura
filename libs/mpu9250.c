@@ -256,7 +256,7 @@ static inline void check_conn(mpu9250_t* self)
 {
     i2c_dev_t* i2c = self->super.comm;
     ASSERT(i2c->set_addr(i2c, self->super.device_addr) > -1);
-    ASSERT(i2c->read_byte_reg(i2c, WHO_AM_I) == 0x71);
+    ASSERT(i2c->read_byte_reg(i2c, WHO_AM_I) == MPU9250_ID);
 }
 
 void update_data(mpu9250_t* self)
