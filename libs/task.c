@@ -8,7 +8,7 @@ bool is_prior(task_t* to, task_t* target)// 'to' is try to insert, target is tas
     {
         return true;
     }
-    if(to->msec > target->msec)
+    else if(to->msec > target->msec)
     {
         return true;
     }
@@ -16,7 +16,7 @@ bool is_prior(task_t* to, task_t* target)// 'to' is try to insert, target is tas
     return false;
 }
 
-static inline void update_time(task_t* task)
+inline void update_time(task_t* task)
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -123,52 +123,28 @@ task_t* fetch_task(struct list* tasks)
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     time_t sec = ts.tv_sec, msec = ts.tv_nsec / 1000000;
-    struct list_elem* last_elem = list_end(tasks);
-    task_t* ret_task = NULL;
-
-    for (struct list_elem* cur = list_front(tasks); 
-         cur != last_elem;
-         cur = list_next(cur))
-    {
-        task_t* fetched = list_entry(cur, task_t, t_elem);
-        if(fetched->sec < sec)
-        {
-            ret_task = fetched;
-            goto exist;
-            
-        }
-        else if(fetched->sec == sec)
-        {
-            if(fetched->msec <= msec)
-            {
-                ret_task = fetched;
-                goto exist;
-            }
-        }
+    struct list_elem* cur = list_pop_front(tasks);
+    task_t* fetched = list_entry(cur, task_t, t_elem);
+    if(fetched->sec < sec)
+    {  
+        return fetched;
     }
-    return NULL;
-    
-    exist:
-        remove_task(ret_task);
-        return ret_task;
+    else if(fetched->sec == sec)
+    {
+        if(fetched->msec <= msec)
+        {
+            return fetched;
+        }            
+    }
 
+    list_push_back(tasks, cur);
+    return NULL;
 }
 
 void schedule(struct list* tasks, task_t* cur)
 {
     ASSERT(is_task(cur));
 
-    task_t* less_prior = find_task(tasks, cur, is_prior);
-    struct list_elem* before = NULL;
-
-    if(NULL == less_prior)
-    {
-        before = list_end(tasks);
-    }
-    else
-    {
-        before = &less_prior->t_elem;
-    }
     update_time(cur);
-    list_insert(before, &cur->t_elem);
+    list_push_back(tasks, &cur->t_elem);
 }

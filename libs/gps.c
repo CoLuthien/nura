@@ -4,6 +4,8 @@
 
 gps_t* init_gps(serial_dev_t* port)
 {
+
+    //gps is cold start!
     gps_t* self = malloc(sizeof(gps_t));
     sensor_t* super = &self->super;
 
@@ -19,11 +21,14 @@ gps_t* init_gps(serial_dev_t* port)
         printf("gps baud rate does not match :%d\n", port->baud);
         port->update_baud(port, 9600);
     }
+    port->super.write_nbyte(port, strlen(baud_rate), baud_rate);
+    port->update_baud(port, 115200);
 
     port->super.write_nbyte(port, strlen(update_rate), update_rate);
-    port->super.write_nbyte(port, strlen(baud_rate), baud_rate);
 
-    port->update_baud(port, 115200);
+    nmea_parser_init(&self->parser);
+    nmea_zero_INFO(&self->cur_info);
+
     printf("gps port baudrate: %d\n", port->baud);
 
     return self;

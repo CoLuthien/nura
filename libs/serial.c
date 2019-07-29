@@ -21,6 +21,7 @@ serial_dev_t* init_serial(const char* serial_name, int baudrate)
 	if(super->fd == -1)
 	{
 		printf("fd acquire failed\n");
+		free(super);
 		return NULL;
 	}
 	super->type = UART;
@@ -47,16 +48,29 @@ void close_serial(serial_dev_t* self)
 	self = NULL;
 }
 
-void update_baud(serial_dev_t* self, int baud)
+void update_baud(serial_dev_t* self, int baudrate)
 {
 	struct termios options;
+	int baud;
 	tcgetattr(self->super.fd, &options);
+	switch(baudrate)
+	{
+		case 9600: baud = B9600; break;
+		case 19200: baud = B19200; break;
+		case 38400: baud = B38400; break;
+		case 57600: baud = B57600; break;
+		case 115200: baud = B115200; break;
+		case 230400: baud = B230400; break;
+		
+		default:
+ 			return -2;
+	}
 
 	cfsetispeed(&options, baud);
 	cfsetospeed(&options, baud);
 
 	tcsetattr(self->super.fd, TCSANOW, &options);
-	self->baud = baud;
+	self->baud = baudrate;
 
 	return;
 }
@@ -98,7 +112,7 @@ int serial_open(const char* name, int baudrate)
 	options.c_lflag &= ~(ICANON | ECHO | ECHOE| ISIG);
 	options.c_oflag &= ~OPOST;
 	
-	options.c_cc[VMIN] = 0;
+	options.c_cc[VMIN] = 1;
 	options.c_cc[VTIME] = 0;
 
 	tcsetattr(fd, TCSANOW, &options);

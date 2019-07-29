@@ -62,10 +62,7 @@ void write_data_log()
 }
 void update_gps()
 {
-    if(gps_receive(gps))
-    {
-      // show the infos
-    }
+    gps_receive(gps);
 }
 void update_pressure()
 {
