@@ -16,11 +16,11 @@ TARGET_OBJS = $(OBJS:%.o=$(BUILD_DIR)/%.o)
 INCS = -I ../libs -I ../libs/nmea
 LIBS = -lm  
 
-all: libs logic
+all: lib logic
 	$(CC) $(CFLAGS) -o main.out $(INCS) $(TARGET_OBJS) $(BUILD_DIR)/libnmea.a $(LIBS)
 
 
-libs: 
+lib: 
 	cd libs && $(MAKE) 
 
 logic:
@@ -28,5 +28,6 @@ logic:
 
 depend: 
 	$(CC) -MM $(INCS) $(SRCS) > depend_file.mk
-
+clean:
+	rm build/*
 -include depend_file.mk
