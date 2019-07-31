@@ -10,6 +10,7 @@ typedef struct mpu9250
     sensor_t super;
     float accel_res, gyro_res;
 
+    float mean_acc;
     float accel[3], gyro[3];
 
 }mpu9250_t;

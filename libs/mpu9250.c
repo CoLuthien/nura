@@ -140,7 +140,7 @@ static bool _init_mpu9250(mpu9250_t* self)
 
     if (i2c->set_addr(i2c, self->super.device_addr) != 0)
     {
-        printf("failed to set address to %p", self->super.device_addr);
+        printf("failed to set address to 0x%x", self->super.device_addr);
         return false;
     }
     if(self->super.rate != 0)
@@ -199,6 +199,16 @@ mpu9250_t* init_mpu9250(i2c_dev_t* i2c, int sample_rate, uint8_t accel_scale, ui
 
     i2c->write_bit_reg(i2c, PWR_MGMT_1, 7, 1, 1, false); //reset device
     usleep(100*1000);
+    if(_init_mpu9250(self))
+    {
+        printf("imu init ok!\n");
+    }
+    else
+    {
+        printf("imu initialization failed!\n");
+        free(self);
+        return NULL;
+    }
 
     switch (accel_scale)
     {
@@ -248,18 +258,7 @@ mpu9250_t* init_mpu9250(i2c_dev_t* i2c, int sample_rate, uint8_t accel_scale, ui
             printf("gyro scale you want does not exist!! setup to default value 500deg/s\n");
             break;
     }
-    
-    if(_init_mpu9250(self))
-    {
-        return self;
-    }
-    else
-    {
-        printf("imu initialization failed!\n");
-        free(self);
-        return NULL;
-    }
-
+    return self;
 }
 
 static inline void check_conn(mpu9250_t* self)
@@ -278,13 +277,20 @@ void update_data(mpu9250_t* self)
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
 
-    i2c->read_nbyte_reg(i2c, ACCEL_YOUT_H, 2, &ay);
-    i2c->read_nbyte_reg(i2c, ACCEL_XOUT_H, 2, &ax);
-    i2c->read_nbyte_reg(i2c, ACCEL_ZOUT_H, 2, &az);
+    ax = i2c->read_byte_reg(i2c, ACCEL_XOUT_H) << 8 | 
+        i2c->read_byte_reg(i2c, ACCEL_XOUT_L);
+    ay = i2c->read_byte_reg(i2c, ACCEL_YOUT_H) << 8 | 
+        i2c->read_byte_reg(i2c, ACCEL_YOUT_L);
+    az = i2c->read_byte_reg(i2c, ACCEL_ZOUT_H) << 8 | 
+        i2c->read_byte_reg(i2c, ACCEL_ZOUT_L);
 
-    i2c->read_nbyte_reg(i2c, GYRO_XOUT_H, 2, &gx);
-    i2c->read_nbyte_reg(i2c, GYRO_YOUT_H, 2, &gy);
-    i2c->read_nbyte_reg(i2c, GYRO_ZOUT_H, 2, &gz);
+    gx = i2c->read_byte_reg(i2c, GYRO_XOUT_H) << 8 |
+        i2c->read_byte_reg(i2c, GYRO_XOUT_L);
+    gy = i2c->read_byte_reg(i2c, GYRO_YOUT_H) << 8 |
+        i2c->read_byte_reg(i2c, GYRO_YOUT_L);
+    gz = i2c->read_byte_reg(i2c, GYRO_ZOUT_H) << 8 |
+        i2c->read_byte_reg(i2c, GYRO_ZOUT_L);
+
 
     self->accel[0] = (float)ax * self->accel_res;
     self->accel[1] = (float)ay * self->accel_res;

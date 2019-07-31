@@ -16,7 +16,7 @@ bool is_prior(task_t* to, task_t* target)// 'to' is try to insert, target is tas
     return false;
 }
 
-inline void update_time(task_t* task)
+void update_time(task_t* task)
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);

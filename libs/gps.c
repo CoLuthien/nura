@@ -11,7 +11,6 @@ gps_t* init_gps(serial_dev_t* port)
 
     super->rate = 10;
     super->comm = port;
-    self->raw_gps_data = fopen("raw_gpsdata", "a+");
 
     const char* update_rate = "$PMTK220,100*2F\r\n";
     const char* baud_rate = "$PMTK251,115200*18\r\n";

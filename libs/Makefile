@@ -15,6 +15,7 @@ all: depend nmealib $(OBJDIR) move
 $(OBJDIR): $(OBJS)
 	$(CC) $(CFLAGS) $(LIBS) -o  $(OBJS)
 
+
 nmealib:
 	cd nmea && $(MAKE)
 

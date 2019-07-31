@@ -12,7 +12,6 @@
 
 typedef struct _gps_t{
     sensor_t super;
-    FILE* raw_gps_data;
     nmeaINFO cur_info;
     nmeaPARSER parser;
 

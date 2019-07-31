@@ -51,6 +51,7 @@ bool is_task(task_t* task);
     simple Round Robin scheduler
  */
 task_t* fetch_task(struct list* tasks);
+inline void update_time(task_t* task);
 /*
     if list is null then return null
  */
