@@ -1,9 +1,13 @@
 #include "log.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <unistd.h>
 
 logger_t* init_logger(const char* file_name, unsigned int len)
 {
     logger_t* log = (logger_t*)malloc(sizeof(logger_t));
     log->fp = fopen(file_name, "a");
+    log->fd = fileno(log->fp);
     log->buffer = malloc(sizeof(char*) * len);
     log->length = len;
     log->used = 0;
@@ -53,4 +57,5 @@ void flush_log(logger_t* self)
         self->buffer[i] = NULL;
     }
     self->used = 0;
+    fdatasync(self->fd);
 }

@@ -11,6 +11,7 @@
 #include "lps25.h"
 
 bool interrupt = false;
+bool status = false;
 static struct list main_task;
 static i2c_dev_t* i2c = NULL;
 static serial_dev_t* port1 = NULL;
@@ -23,6 +24,7 @@ static lps25_t* baro = NULL;
 void update_imu()
 {
     update_data(imu);
+    calculate_accel();
 }
 void sig_handle(int signum)
 {
@@ -44,14 +46,12 @@ void write_data_log()
 
     char* gps_log = malloc(sizeof(char) * 1024);
 
-    sprintf(gps_log, "%.2f,%.2f,%.2f,%.2f,%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n", 
+    sprintf(gps_log, "%.2f,%.2f,%.2f,%.2f,%d,%d,%.3f,%.3f,%.3f,%.2f,%.2f,%.2f,%2f,%2f\n", 
         info->lat, info->lon, info->elv, info->speed, info->sig, info->fix,
-        imu->accel[0], imu->accel[1], imu->accel[2], imu->accel_res,
-        imu->gyro[0], imu->gyro[1], imu->gyro[2], imu->gyro_res
+        imu->accel[0], imu->accel[1], imu->accel[2],
+        imu->gyro[0], imu->gyro[1], imu->gyro[2], baro->pressure, baro->temp
     );
-
     push_log(flight_log, gps_log);
-
 }
 void calculate_accel()
 {
@@ -68,12 +68,22 @@ void update_gps()
 {
     gps_receive(gps);
 }
+
+void check_status()
+{
+    if(imu->mean_acc <= 0.1)
+    {
+        printf("!!");
+        /*
+            todo: 
+            if the condition met then do the things
+         */
+    }
+}
 void update_pressure()
 {
     update_baro(baro);
 }
-
-
 
 void run_task()
 {
@@ -97,14 +107,16 @@ void init_main()
     port1 = init_serial("/dev/ttyAMA0", 9600);
 //    port2 = init_serial("/dev/,", 115200);
     gps = init_gps(port1);
-    flight_log = init_logger("flight data", 64);
+    flight_log = init_logger("flight_data", 64);
     imu = init_mpu9250(i2c, 50, 16, 500);
     baro = init_baro(i2c, 25);
 
     insert_back_task(&main_task, init_task(update_gps, 100, 150, "gps_update"));
     insert_back_task(&main_task,init_task(update_imu, 1000 / imu->super.rate, 20, "imu_update"));
     insert_back_task(&main_task,init_task(update_pressure, 1000 / baro->super.rate, 100, "barometer"));
-    insert_back_task(&main_task,init_task(write_data_log, 100, 100, "data_log"));
+    insert_back_task(&main_task, init_task(check_status, 10, 10, "status"));
+    insert_back_task(&main_task,init_task(write_data_log, 10, 100, "data_log"));
+    
 }
 
 int main(int argc, char* argv)

@@ -6,6 +6,7 @@
 typedef struct _logger_t
 {
     FILE* fp;
+    int fd;
     char** buffer;
     unsigned int used;
     unsigned int length;
