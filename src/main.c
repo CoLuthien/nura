@@ -48,7 +48,7 @@ void write_data_log()
     char* gps_log = malloc(sizeof(char) * 1024);
     clock_gettime(CLOCK_MONOTONIC, &ts);
         
-    sprintf(gps_log, "%d,%d  %.2f,%.2f,%.2f,%.2f,%d,%d,%.3f,%.3f,%.3f,%.2f,%.2f,%.2f,%2f,%2f\n",
+    sprintf(gps_log, "%d,%d  %f,%f,%f,%f,%d,%d,%f,%f,%f,%f,%f,%f,%f,%f\n",
         ts.tv_sec, ts.tv_nsec / 1000000,
         info->lat, info->lon, info->elv, info->speed, info->sig, info->fix,
         imu->accel[0], imu->accel[1], imu->accel[2],
@@ -118,7 +118,7 @@ void init_main()
     insert_back_task(&main_task,init_task(update_imu, 1000 / imu->super.rate, 20, "imu_update"));
     insert_back_task(&main_task,init_task(update_pressure, 1000 / baro->super.rate, 100, "barometer"));
     insert_back_task(&main_task, init_task(check_status, 10, 10, "status"));
-    insert_back_task(&main_task,init_task(write_data_log, 10, 100, "data_log"));
+    insert_back_task(&main_task,init_task(write_data_log, 20, 100, "data_log"));
 }
 
 int main(int argc, char* argv)
