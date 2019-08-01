@@ -5,7 +5,7 @@ typedef struct _lps25_t
 {
     sensor_t super;
     i2c_dev_t* i2c;
-    float pressure, temp;
+    float pressure, temp, ref_press;
 }lps25_t;
 
 lps25_t* init_baro(i2c_dev_t* i2c, int rate);

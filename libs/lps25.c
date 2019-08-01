@@ -31,7 +31,7 @@ lps25_t* init_baro(i2c_dev_t* i2c, int update_rate)
     }
 
     i2c->write_bit_reg(i2c, CTRL_REG2, 7, 1, 1, true); // set boot time reset
-    i2c->write_bit_reg(i2c, CTRL_REG2, 2, 1, 1, true);
+    i2c->write_bit_reg(i2c, CTRL_REG2, 2, 1, 0, true); // no diff, actual value;
     usleep(400*1000);
 
     i2c->write_bit_reg(i2c,CTRL_REG1, 7, 1, 1, true);// set power on
@@ -81,6 +81,7 @@ void destroy_baro(lps25_t* self)
 void update_baro(lps25_t* self)
 {
     i2c_dev_t* i2c = self->super.comm;
+    i2c->set_addr(i2c, self->super.device_addr);
 
     uint32_t ref_p = (uint32_t)(
 		    	i2c->read_byte_reg(i2c, REF_P_H)<< 16 |
