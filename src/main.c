@@ -20,6 +20,7 @@ static gps_t* gps = NULL;
 static logger_t* flight_log = NULL;
 static mpu9250_t* imu = NULL;
 static lps25_t* baro = NULL;
+struct timespec ts;
 
 void update_imu()
 {
@@ -45,8 +46,10 @@ void write_data_log()
     };
 
     char* gps_log = malloc(sizeof(char) * 1024);
-
-    sprintf(gps_log, "%.2f,%.2f,%.2f,%.2f,%d,%d,%.3f,%.3f,%.3f,%.2f,%.2f,%.2f,%2f,%2f\n", 
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+        
+    sprintf(gps_log, "%d,%d  %.2f,%.2f,%.2f,%.2f,%d,%d,%.3f,%.3f,%.3f,%.2f,%.2f,%.2f,%2f,%2f\n",
+        ts.tv_sec, ts.tv_nsec / 1000000,
         info->lat, info->lon, info->elv, info->speed, info->sig, info->fix,
         imu->accel[0], imu->accel[1], imu->accel[2],
         imu->gyro[0], imu->gyro[1], imu->gyro[2], baro->pressure, baro->temp
@@ -116,7 +119,6 @@ void init_main()
     insert_back_task(&main_task,init_task(update_pressure, 1000 / baro->super.rate, 100, "barometer"));
     insert_back_task(&main_task, init_task(check_status, 10, 10, "status"));
     insert_back_task(&main_task,init_task(write_data_log, 10, 100, "data_log"));
-    
 }
 
 int main(int argc, char* argv)
