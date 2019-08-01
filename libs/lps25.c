@@ -22,7 +22,7 @@ lps25_t* init_baro(i2c_dev_t* i2c, int update_rate)
     self->super.comm = i2c;
     printf("initializing barometer!!\n");
     self->super.rate = update_rate;
-    self->super.device_addr = LPS25_ADDR1; // WE ONLY USE 1 BAROMETER
+    self->super.device_addr = LPS25_ADDR2; // WE ONLY USE 1 BAROMETER
 
     if(!check_conn(self, LPS25_ADDR1) && !check_conn(self, LPS25_ADDR2))
     {
@@ -35,7 +35,7 @@ lps25_t* init_baro(i2c_dev_t* i2c, int update_rate)
     usleep(400*1000);
 
     i2c->write_bit_reg(i2c,CTRL_REG1, 7, 1, 1, true);// set power on
-    i2c->write_bit_reg(i2c, CTRL_REG1, 1, 1, 0, true);// noreset autozero
+    i2c->write_bit_reg(i2c, CTRL_REG1, 1, 1, 1, true);// reset autozero
     
 
     switch (update_rate)
@@ -67,7 +67,7 @@ lps25_t* init_baro(i2c_dev_t* i2c, int update_rate)
     usleep(200* 1000);// wait 200ms 
 
     i2c->write_bit_reg(i2c, CTRL_REG2, 3, 1, 0, true); // enable i2c
-    i2c->write_bit_reg(i2c, CTRL_REG2, 1, 1, 1, true);// set auto zero value
+    i2c->write_bit_reg(i2c, CTRL_REG2, 1, 1, 0, true);// set auto zero value
     
     i2c->write_bit_reg(i2c, CTRL_REG2, 6, 3, 0, true);
     return self;
