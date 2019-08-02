@@ -9,11 +9,14 @@ gps_t* init_gps(serial_dev_t* port)
     gps_t* self = malloc(sizeof(gps_t));
     sensor_t* super = &self->super;
 
+    self->nmea_log = init_logger("nmea_raw_data", 10);
+
     super->rate = 10;
     super->comm = port;
 
     const char* update_rate = "$PMTK220,100*2F\r\n";
     const char* baud_rate = "$PMTK251,115200*18\r\n";
+    
 
     if(port->baud != 9600)
     {
@@ -36,6 +39,7 @@ gps_t* init_gps(serial_dev_t* port)
 void gps_receive(gps_t* self)
 {
     serial_dev_t* uart = (serial_dev_t*)self->super.comm;
+    
     uint8_t idx = 0;;
     uint8_t stat;
     uint8_t ch;
@@ -57,5 +61,7 @@ void gps_receive(gps_t* self)
         }
         
     }
+    push_log(self->nmea_log, arr);
+    
 	int len = nmea_parse(&self->parser, (const char*)arr, strlen(arr), &self->cur_info);	
 }
