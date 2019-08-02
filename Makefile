@@ -14,7 +14,7 @@ BUILD_DIR = build
 TARGET_OBJS = $(OBJS:%.o=$(BUILD_DIR)/%.o)
 
 INCS = -I ../libs -I ../libs/nmea
-LIBS = -lm  
+LIBS = -lm -lbcm2835 
 
 all: lib logic
 	$(CC) $(CFLAGS) -o main.out $(INCS) $(TARGET_OBJS) $(BUILD_DIR)/libnmea.a $(LIBS)

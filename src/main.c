@@ -9,6 +9,24 @@
 #include "serial.h"
 #include "log.h"
 #include "lps25.h"
+#include <bcm2835.h>
+#include <pthread.h>
+
+#define IN  0
+#define OUT 1
+
+#define LOW  0
+#define HIGH 1
+
+#define PWM_PIN 12
+#define PWM_CHANNEL 0
+#define RANGE 1024
+
+#define deploy_in_msec 1090
+
+
+#define PIN  24 /* P1-18 */
+#define POUT 4  /* P1-07 */
 
 bool interrupt = false;
 bool status = false;
@@ -31,6 +49,15 @@ void sig_handle(int signum)
 {
     fclose(flight_log->fp);
     exit(0);
+}
+
+void deploy_para()
+{
+    for(int i = -RANGE; i < RANGE; i++)
+    {
+        bcm2835_pwm_set_data(PWM_CHANNEL, i);
+        usleep(1 * 1000);
+    }
 }
 
 void write_data_log()
@@ -74,14 +101,46 @@ void update_gps()
 
 void check_status()
 {
-    if(imu->mean_acc <= 0.1)
+    static bool is_deploy = false;
+    float p_diff = baro->ref_press - baro->pressure;
+    static struct timespec deploy_time;
+    
+    if(p_diff <= 0 )
     {
-        printf("!!");
-        /*
-            todo: 
-            if the condition met then do the things
-         */
+        if(imu->accel[2] >= 1.6)
+        {
+            is_deploy = true;
+            clock_gettime(CLOCK_MONOTONIC, &deploy_time);
+            time_t sec = deploy_in_msec / 1000;
+            time_t msec = deploy_in_msec - sec * 1000;
+            deploy_time.tv_sec += sec;
+            time_t nmsec = deploy_time.tv_nsec / 1000000;
+            nmsec += msec;
+            if(nmsec >= 1000)
+            {
+                deploy_time.tv_sec += 1;
+                nmsec -= 1000;
+            }
+            deploy_time.tv_nsec = nmsec * 1000000;
+        }
     }
+    if(is_deploy)
+    {
+        struct timespec cur;
+        clock_gettime(CLOCK_MONOTONIC, &cur);
+        if(deploy_time.tv_sec < cur.tv_sec)
+        {
+            deploy_para();           
+        }
+        else if(deploy_time.tv_sec == cur.tv_sec)
+        {
+            if(deploy_time.tv_nsec <= cur.tv_nsec)
+            {
+                deploy_para();
+            }            
+        }
+    }
+    
 }
 void update_pressure()
 {
@@ -113,12 +172,34 @@ void init_main()
     flight_log = init_logger("flight_data", 64);
     imu = init_mpu9250(i2c, 50, 16, 500);
     baro = init_baro(i2c, 25);
+    if(!bcm2835_init())
+    {
+        char* debug = "bcm2835 init failed!!\n";
+        push_log(flight_log, debug);
+        flush_log(flight_log);
+        exit(-1);
+    }
+
+    bcm2835_gpio_fsel(PWM_PIN, BCM2835_GPIO_FSEL_ALT5);
+    bcm2835_pwm_set_clock(BCM2835_PWM_CLOCK_DIVIDER_64);
+    bcm2835_pwm_set_mode(PWM_CHANNEL, 1, 1);
+    bcm2835_pwm_set_range(PWM_CHANNEL, RANGE);
+    bcm2835_pwm_set_data(PWM_CHANNEL, RANGE * -1);// zero init
 
     insert_back_task(&main_task, init_task(update_gps, 100, 150, "gps_update"));
     insert_back_task(&main_task,init_task(update_imu, 1000 / imu->super.rate, 20, "imu_update"));
     insert_back_task(&main_task,init_task(update_pressure, 1000 / baro->super.rate, 100, "barometer"));
     insert_back_task(&main_task, init_task(check_status, 10, 10, "status"));
     insert_back_task(&main_task,init_task(write_data_log, 20, 100, "data_log"));
+
+    export_gpio(POUT);
+    set_gpio_direction(POUT, OUT);
+    for(int i = 0; i < 10; i++)
+    {
+        write_gpio(POUT, i % 2);
+        usleep(100*1000);
+    }
+    unexport_gpio(POUT);
 }
 
 int main(int argc, char* argv)

@@ -104,6 +104,7 @@ void update_baro(lps25_t* self)
 
 
     self->pressure = (float)((float)p / 4096.0f);
+    self->ref_press = (float)((float)ref_p / 4096.0f);
 
     int16_t t = (int16_t)(
 		    i2c->read_byte_reg(i2c,TEMP_OUT_H) << 8|
