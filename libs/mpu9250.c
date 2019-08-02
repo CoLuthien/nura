@@ -174,7 +174,8 @@ static bool _init_mpu9250(mpu9250_t* self)
 
     usleep(40 * 1000); 
     //check we are really commnuicate with mpu9250
-    if (i2c->read_byte_reg(i2c, WHO_AM_I) != MPU9250_ID)
+    uint8_t val = i2c->read_byte_reg(i2c, WHO_AM_I);
+    if (val != MPU9250_ID)
     {
         printf("device not respond!!\n");
         return;

@@ -18,7 +18,7 @@
 #define LOW  0
 #define HIGH 1
 
-#define PWM_PIN 12
+#define PWM_PIN RPI_GPIO_P1_12
 #define PWM_CHANNEL 0
 #define RANGE 1024
 
@@ -131,12 +131,14 @@ void check_status()
         if(deploy_time.tv_sec < cur.tv_sec)
         {
             deploy_para();           
+            is_deploy = false;
         }
         else if(deploy_time.tv_sec == cur.tv_sec)
         {
             if(deploy_time.tv_nsec <= cur.tv_nsec)
             {
                 deploy_para();
+                is_deploy = false;
             }            
         }
     }

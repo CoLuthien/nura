@@ -70,6 +70,7 @@ lps25_t* init_baro(i2c_dev_t* i2c, int update_rate)
     i2c->write_bit_reg(i2c, CTRL_REG2, 1, 1, 0, true);// set auto zero value
     
     i2c->write_bit_reg(i2c, CTRL_REG2, 6, 3, 0, true);
+    printf("baro init done!!\n");
     return self;
 }
 
